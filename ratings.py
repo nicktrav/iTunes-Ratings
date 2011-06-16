@@ -96,12 +96,23 @@ def printAlbumStats(song):
     # run a search for the album
     results = itunes.search(lib, for_=song['album'], only=k.albums)
     
-    # print len(results), ' items found!'
+    tracks = []
     for item in results:
-        if item.database_ID() == song['ID']:
-            print '%5d %-40s %3d' % (item.track_number(), item.name(), item.rating()) + bcolours.FAIL +' <<-- PLAYING'+ bcolours.ENDC
+        track = {}
+        track['track number'] = item.track_number()
+        track['name'] = item.name()
+        track['rating'] = item.rating()
+        track['ID'] = item.database_ID()
+            
+        tracks.append(track)
+            
+    tracks = sorted(tracks, key = lambda item: item['track number'])
+    
+    for track in tracks:
+        if track['ID']== song['ID']:          
+            print '%5d %-40s %3d' % (track['track number'], track['name'], track['rating']) + bcolours.FAIL +' <<-- PLAYING'+ bcolours.ENDC
         else:
-            print '%5d %-40s %3d' % (item.track_number(), item.name(), item.rating())
+            print '%5d %-40s %3d' % (track['track number'], track['name'], track['rating'])
     
     return
 
