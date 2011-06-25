@@ -5,6 +5,8 @@ import sys
 import os
 import time
 from appscript import *
+from pyechonest import config
+from pyechonest import artist
 
 # colors class
 class bcolours:
@@ -23,7 +25,6 @@ class bcolours:
         self.FAIL = ''
         self.ENDC = ''
     
-
 
 def getSong():
     """
@@ -58,7 +59,8 @@ def printInfo(song):
     print '\t%s' % song['name']
     print '\tArtist: %s' % song['artist']
     print '\tAlbum: %s' % song['album']
-    print '\tRating [0-100]: %d' % song['rating']
+    print '\tRating [0-100]: %d' % song['rating']    
+
 
 def updateRating(song, rating):
     """
@@ -87,7 +89,7 @@ def printAlbumStats(song):
     """
     Print off some stats for the sonf
     """
-    print '\n-- Album Information --\n'
+    print bcolours.FAIL + '\nAlbum Information:\n' + bcolours.FAIL
     print bcolours.OKGREEN + '%5s%25s%16s%s' % ('#', ' -- Title -- ', '', 'Rating') + bcolours.ENDC
     # get the main library as a playlist
     itunes = app('itunes')
@@ -116,7 +118,32 @@ def printAlbumStats(song):
     
     return
 
+def getSimilarArtists(artist_name):
+    "Get similar artists to display"
+    similar_artists = []
+    
+    bk_results = artist.search(artist_name)
+    bk = bk_results[0]
+    similar_artists = bk.similar
+    
+    return similar_artists
+    
+    toPrint = ''
+    for similar_artist in similar_artists[:3]:
+        toPrint = toPrint + str(similar_artist) + ', '
+        
+    print '\t' + toPrint[:-2]
+
+def printSimilarArtists(artists, n=3):
+    """Print n similar artists"""
+    print '\n' + bcolours.FAIL + 'Similar Artists:' + bcolours.ENDC
+    for artist in artists[:n]:
+        print '\t', artist
+
 def main():
+    config.ECHO_NEST_API_KEY = 'CIF1V52LAHFAM0NBO'
+    previous_artist = ''
+    
     # continue until 'q' is input
     while True:
         # get the song and print information
@@ -127,6 +154,14 @@ def main():
         # print song information here ---
         printAlbumStats(song)
         
+        # print similar artists if artist has changed
+        current_artist = song['artist']
+        if current_artist != previous_artist:
+            similar_artists = getSimilarArtists(song['artist'])
+            
+        printSimilarArtists(similar_artists, 3)    
+        previous_artist = current_artist
+            
         # get the user input
         print "\n-- Press 'r' to rate, 'q' to quit --"
         key = raw_input()
